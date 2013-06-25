@@ -32,10 +32,10 @@
       };
       /**
       * 默认配置
-      * @type {Object}
+      * @type {{tabs: NodeList, cons: NodeList}}
       */
       var defineConfig = {
-        dataOriginal: 'data-original',
+        original: 'data-original',
         container: doc,
         event: 'scroll',
         callback: function(){}
@@ -48,12 +48,7 @@
               container = opts.container['body'] || opts.container['documentElement'];
 
           for (var i = 0; i < target.length; i++) {
-            var imgNode = target[i];
-            if(imgNode){
-              for (var j = 0; j < imgNode.length; j++) {
-                imgArray.push(imgNode[j]);
-              }
-            }
+            imgArray.push(target[i]);
           }
 
           //
