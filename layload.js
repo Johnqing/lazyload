@@ -32,7 +32,7 @@
       };
       /**
       * 默认配置
-      * @type {{tabs: NodeList, cons: NodeList}}
+      * @type {Object}
       */
       var defineConfig = {
         original: 'data-original',
