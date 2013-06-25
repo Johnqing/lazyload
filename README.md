@@ -1,2 +1,11 @@
-﻿#图片懒加载
-*本插件基于我自己的框架，用时请添加方法
+#图片懒加载#
+
+
+##调用##
+<pre>
+imgLazyLoad(imgNodes, {
+   original: 'data-original',
+   container: 'document',
+   event: 'scroll'
+});
+</pre>
