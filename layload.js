@@ -1,72 +1,95 @@
 /*
 * 调用:
-*    Y.lazyload({
-*        elem : [Y.$id(xx).getElementsByTagName('img'),Y.$id(xx2).getElementsByTagName('img')],
-*        original : 'data-original',
-*        container : 'document',
-*        event : 'scroll',
-*        fadeIn : true
-*    });
-* author:lq
-* version : 0.1
-* 备注：目前只支持scroll事件，后期添加事件拓展
+* lazyload(imgNodes, {
+*   original: 'data-original',
+*   container: 'document',
+*   event: 'scroll'
+* });
+* @author: johnqing
+* @version: 0.1
 */
-Y.lazyload = function(config){
-    config = Y.extend({
-        elem        :   'lazyload',
-        original    :   'data-original', // String          存放图片真实地址的属性
-        container   :   document,        // DOM / Selector 默认的容器为document，可自定义容器
-        event       :   'scroll',   // String            触发事件类型，默认为window.onscroll事件                
-        fadeIn      :   true,      // Boolean        是否使用fadeIn效果来显示                
-    },config);
-    var imgNodes = config.elem,
-    imgArray = [],
-    original = config.original,
-    container = config.container['body'] || config.container['documentElement'],
-    event = config.event,
-    dataName = 'imglazyload_offset';        
-    
-    //遍历获取图片集合
-    for(var j=0;j<imgNodes.length;j++){
-        var oE = imgNodes[j];
-        if(oE){
-            for(var t=0;t<oE.length;t++){
-                imgArray.push(oE[t]);    
-            }    
-        }    
-    }
-    //图片加载开始
-    var loader = function( triggerElem, event ){
-        var i = 0,ObjPoint, elem, lazySrc,
-        top = (document.body.scrollTop || document.documentElement.scrollTop),height = document.documentElement.clientHeight;
-        
-        for( ; i < imgArray.length; i++ ){    
-            elem = imgArray[i];
-            if(elem.className=="imglazyload_offset"){continue;};
-            lazySrc = elem.getAttribute( config.original );            
-            if( !lazySrc || elem.src === lazySrc ){
-                continue;
-            }
-            //当前图片的绝对位置
-            ObjPoint = Y.getObjPoint(elem).y; 
-            if(ObjPoint>=top&&ObjPoint<=(top+height)){
-                // 加载图片
-                elem.src = lazySrc;
-                elem.className = dataName;
-                //是否增加透明度变化
-                if(!config.fadeIn) return ;
-                Y.toFadeIn(elem);
-            }
-        }        
-    };
-    
-    var fire = function( e ){
-        loader( this, e.type );
-    };
-    // 绑定事件
-    Y.attachEvent(window,event,fire);
-    Y.attachEvent(window,'resize',fire);
-    // 初始化
-    loader();
-    return this;    
-};
+(function(window){
+  var doc = window.document,
+  extend = function(define, source) {
+      for (var property in source) define[property] = source[property];
+      return define;
+  },
+  on = function(element, type, handler) {
+      element.addEventListener ? element.addEventListener(type, handler, false) : element.attachEvent("on" + type, handler);
+  },
+  gId = function(id){
+      return doc.getElementById(id);
+  },
+  getObjPoint = function(o){
+      var x=y=0;
+      do {
+          x += o.offsetLeft || 0;
+          y += o.offsetTop  || 0;
+          o = o.offsetParent;
+      } while (o);
+
+      return {'x':x,'y':y};
+  };
+  /**
+  * 默认配置
+  * @type {{tabs: NodeList, cons: NodeList}}
+  */
+  var defineConfig = {
+    original: 'data-original',
+    container: doc,
+    event: 'scroll',
+    callback: function(){}
+  };
+  window.imgLazyLoad = function(target, opts){
+      opts = extend(defineConfig, opts);
+
+      var imgArray = [],
+          dataName = 'img_offset',
+          container = opts.container['body'] || opts.container['documentElement'];
+
+      for (var i = 0; i < target.length; i++) {
+        var imgNode = target[i];
+        if(imgNode){
+          for (var j = 0; j < imgNode.length; j++) {
+            imgArray.push(imgNode[j]);
+          }
+        }
+      }
+
+      //
+      var loader = function(){
+          var i = 0,
+            ObjPoint, 
+            elem, 
+            lazySrc,
+            top = container.scrollTop,
+            height = container.clientHeight;
+          
+          for( ; i < imgArray.length; i++ ){    
+              elem = imgArray[i];
+
+              if(elem.className == dataName){continue;};
+
+              lazySrc = elem.getAttribute(opts.original);
+
+              if( !lazySrc || elem.src === lazySrc ){
+                  continue;
+              }
+
+              //当前图片的绝对位置
+              ObjPoint = getObjPoint(elem).y; 
+              if(ObjPoint >= top && ObjPoint <= (top+height)){
+                  // 加载图片
+                  elem.src = lazySrc;
+                  elem.className = dataName;
+              }
+          }        
+      };
+      // 绑定事件
+      on(window, opts.event, loader);
+      on(window, 'resize', loader);
+      // 初始化
+      loader();
+      return this;
+  }    
+}(this));
